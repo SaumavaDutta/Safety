@@ -1,0 +1,28 @@
+name: Update Bot Token
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Update bot token
+        run: |
+          echo "${{ secrets.BOT_TOKEN }}" | base64 --decode > bot-token.txt || { echo "Failed to update bot token file"; exit 1; }
+
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bot-token.txt
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update bot token"
+
+      - name: Push changes
+        if: success()
+        run: git push
